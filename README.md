@@ -13,22 +13,22 @@ Production-style Azure Kubernetes Service deployment built with cost guardrails.
 ```mermaid
 flowchart LR
   subgraph External
-    U[User / Browser]
+    U[User Browser]
   end
 
   subgraph Azure
     PIP[Public IP]
-    ALB[Azure Load Balancer<br/>(provisioned by NGINX Ingress)]
+    ALB[Azure Load Balancer - created by NGINX Ingress]
   end
 
   subgraph AKS[AKS Cluster]
-    subgraph IngressNS[Namespace: ingress-nginx]
+    subgraph IngressNS[Namespace ingress-nginx]
       NGINX[NGINX Ingress Controller]
     end
 
-    subgraph AppNS[Namespace: default]
-      SVC[Service: hello (ClusterIP)]
-      POD[Pod: hello<br/>nginxdemos/hello]
+    subgraph AppNS[Namespace default]
+      SVC[Service hello - ClusterIP]
+      POD[Pod hello - nginxdemos/hello]
     end
   end
 
@@ -36,14 +36,11 @@ flowchart LR
     ACR[ACR]
   end
 
-  U --> PIP
-  PIP --> ALB
-  ALB --> NGINX
-  NGINX --> SVC
-  SVC --> POD
+  U --> PIP --> ALB --> NGINX --> SVC --> POD
   AKS -->|Image Pull| ACR
+```
 
-  **Cost guardrail:** This environment is deployed only during lab sessions and fully removed afterward (`az group delete`) to prevent ongoing compute and load balancer charges.
+**Cost guardrail:** This environment is deployed only during lab sessions and fully removed afterward (`az group delete`) to prevent ongoing compute and load balancer charges.
 
 ## Cost Strategy
 Cluster is deployed only during lab sessions and fully removed afterward to minimize spend.
