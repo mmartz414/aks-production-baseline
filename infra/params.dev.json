@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "aksName": { "value": "aks-lab-01" },
+    "acrName": { "value": "martzakslabacr414" },
+    "nodeVmSize": { "value": "Standard_D2s_v4" },
+    "nodeCount": { "value": 1 },
+    "enableMonitoring": { "value": false },
+    "lawName": { "value": "law-aks-lab" }
+  }
+}
