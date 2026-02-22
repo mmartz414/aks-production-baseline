@@ -45,6 +45,9 @@ flowchart LR
 ## Cost Strategy
 Cluster is deployed only during lab sessions and fully removed afterward to minimize spend.
 
+## Scaling
+This project includes CPU-based Horizontal Pod Autoscaler (HPA) configuration (autoscaling/v2) for scale-out/scale-in validation using a temporary load generator pod.
+
 ## What this demonstrates
 - AKS cluster creation with managed identity and ACR integration
 - Kubernetes deployment, service, and ingress (NGINX) routing
@@ -54,7 +57,6 @@ Cluster is deployed only during lab sessions and fully removed afterward to mini
 ## Future production enhancements
 
 - Private AKS cluster and private endpoints  
-- Key Vault CSI driver for secret management  
-- Horizontal Pod Autoscaler (HPA)  
+- Key Vault CSI driver for secret management   
 - Azure Monitor for containers  
 - Network policies and egress control
