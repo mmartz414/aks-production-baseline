@@ -1,47 +1,40 @@
-## Runtime Validation
+## Autoscaling Validation (HPA)
 
-### Cluster Health
-- AKS node pool operational
-- Kubernetes version: v1.33.6
-- Container runtime: containerd
-- Node status: Ready
+### Outcome
+- HPA successfully scaled the `hello` Deployment based on CPU utilization.
+- Target CPU: **50%** (percentage of requested CPU)
+- Observed CPU: **144%**
+- Replicas: **1 → 3**
 
-### Workload Status
-- hello deployment running (1/1 ready)
-- Service exposed via ClusterIP
-- NGINX ingress controller provisioned
-- Public endpoint reachable
+### HPA Summary
 
-### External Endpoint
-- Ingress IP: 135.233.20.48
-- Port: 80
+| HPA | Target | Min | Max | Replicas | Notes |
+|-----|--------|-----|-----|----------|------|
+| hello-hpa | CPU 144% / 50% | 1 | 5 | 3 | Scale-out triggered due to CPU above target |
 
-### Nodes
+### HPA Conditions (Key Signals)
+- **ScalingActive:** True — valid CPU metric found
+- **AbleToScale:** True — controller ready to scale
+- **ScalingLimited:** False — desired replicas within configured range
 
-| Name | Status | Version | Internal IP | OS |
-|------|--------|---------|------------|----|
-| aks-nodepool1-74457834-vmss000000 | Ready | v1.33.6 | 10.224.0.4 | Ubuntu 22.04 |
+### Recent Rescale Event
+- **SuccessfulRescale:** New size **3** because CPU utilization was above target.
 
-### Pods
+### Running Pods (Post Scale-Out)
 
-| Name | Ready | Status | Node |
-|------|-------|--------|------|
-| hello-6f5dcb7d8-lt97r | 1/1 | Running | aks-nodepool1-74457834-vmss000000 |
+| Pod | Ready | Status | Age |
+|-----|-------|--------|-----|
+| hello-754686d7f4-2shws | 1/1 | Running | 115s |
+| hello-754686d7f4-6rrgn | 1/1 | Running | 27s |
+| hello-754686d7f4-vnrtf | 1/1 | Running | 27s |
 
-### Services
-
-| Name | Type | External IP | Ports |
-|------|------|------------|-------|
-| ingress-nginx-controller | LoadBalancer | 135.233.20.48 | 80,443 |
-
-### Ingress
-
-| Name | Class | Address | Port |
-|------|------|---------|------|
-| hello-ingress | nginx | 135.233.20.48 | 80 |
+### Notes on Warnings
+During scale-out, HPA may briefly report metric fetch warnings (e.g., “pods might be unready”) while new pods are starting. This is expected transient behavior; scaling proceeded successfully once pods became ready.
 
 <details>
 <summary>Raw kubectl output</summary>
 
 ```text
-NAME STATUS ROLES AGE VERSION INTERNAL-IP EXTERNAL-IP OS-IMAGE KERNEL-VERSION CONTAINER-RUNTIME aks-nodepool1-74457834-vmss000000 Ready <none> 3m18s v1.33.6 10.224.0.4 <none> Ubuntu 22.04.5 LTS 5.15.0-1102-azure containerd://1.7.30-1 NAME READY STATUS RESTARTS AGE IP NODE NOMINATED NODE READINESS GATES hello-6f5dcb7d8-lt97r 1/1 Running 0 2m7s 10.244.0.64 aks-nodepool1-74457834-vmss000000 <none> <none> NAME TYPE CLUSTER-IP EXTERNAL-IP PORT(S) AGE ingress-nginx-controller LoadBalancer 10.0.6.196 135.233.20.48 80:30582/TCP,443:31284/TCP 103s ingress-nginx-controller-admission ClusterIP 10.0.201.178 <none> 443/TCP 103s NAME CLASS HOSTS ADDRESS PORTS AGE hello-ingress nginx * 135.233.20.48 80 66s
+NAME REFERENCE TARGETS MINPODS MAXPODS REPLICAS AGE hello-hpa Deployment/hello cpu: 144%/50% 1 5 3 102s Name: hello-hpa Namespace: default Labels: <none> Annotations: <none> CreationTimestamp: Sun, 22 Feb 2026 05:23:17 +0000 Reference: Deployment/hello Metrics: ( current / target ) resource cpu on pods (as a percentage of request): 144% (72m) / 50% Min replicas: 1 Max replicas: 5 Deployment pods: 3 current / 3 desired Conditions: Type Status Reason Message ---- ------ ------ ------- AbleToScale True ReadyForNewScale recommended size matches current size ScalingActive True ValidMetricFound the HPA was able to successfully calculate a replica count from cpu resource utilization (percentage of request) ScalingLimited False DesiredWithinRange the desired count is within the acceptable range Events: Type Reason Age From Message ---- ------ ---- ---- ------- Warning FailedGetResourceMetric 42s (x4 over 87s) horizontal-pod-autoscaler failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready) Warning FailedComputeMetricsReplicas 42s (x4 over 87s) horizontal-pod-autoscaler invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: did not receive metrics for targeted pods (pods might be unready) Normal SuccessfulRescale 27s horizontal-pod-autoscaler New size: 3; reason: cpu resource utilization (percentage of request) above target NAME READY STATUS RESTARTS AGE IP NODE NOMINATED NODE READINESS GATES hello-754686d7f4-2shws 1/1 Running 0 115s 10.244.0.54 aks-nodepool1-41997106-vmss000000 <none> <none> hello-754686d7f4-6rrgn 1/1 Running 0 27s 10.244.0.245 aks-nodepool1-41997106-vmss000000 <none> <none> hello-754686d7f4-vnrtf 1/1 Running 0 27s 10.244.0.192 aks-nodepool1-41997106-vmss000000 <none> <none>
+```
+</details>
