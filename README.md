@@ -10,7 +10,7 @@ Production-style Azure Kubernetes Service deployment built with cost guardrails.
 - Cost-controlled lab pattern (deploy → validate → destroy)
 
 ## Architecture
-
+```mermaid
 flowchart LR
   subgraph External
     U[User / Browser]
